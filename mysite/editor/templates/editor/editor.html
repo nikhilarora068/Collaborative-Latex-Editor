@@ -1,0 +1,153 @@
+{% extends 'user/base.html' %}
+{% load static %}
+{% block content %}
+<style>
+html, body {
+  height: 100%;
+  margin: 0;
+}
+</style>
+
+
+<div class="container-fluid h-100" >
+
+  <div class="row">
+    <ul class="actions fit">
+      <li><a href="{% url 'new_file' %}"><button class="button primary fit small" id="newfile_btn">New</button></a></li>
+      <li><a href="#"><button class="button primary fit small" id="delete_btn">Delete</button></a></li>
+      <li><a href="{% url 'save' %}"><button class="button primary fit small" id="save_btn">Save</button></a></li>
+      <li><a href="#"><button class="button primary fit small" id="compile_btn">Compile</button></a></li>
+      <li><a href="#"><button class="button primary fit small" id="save_btn">Share</button></a></li>
+
+    </ul>
+  </div>
+
+  <div class="row justify-content-center h-100 text-left">
+    <div class="col-1.5">
+       {% for file in instance %}
+         <ul class="actions">
+            <li><a href="{% url 'detail' file.id %}" class=""><strong>{{ file.title }}</strong></a></li>
+         </ul>
+       {% endfor %}
+    </div>
+
+    <div class="col" id="editor">
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\title{new}
+\date{October 2018}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+There is a theory which states that if ever anyone discovers exactly what the Universe is for and why it is here, it will instantly dbizarre and inexplicable.
+There is another theory which states that this has already happened.
+
+
+\section{Conclusion}
+``I always thought something was fundamentally wrong with the universe'' \citep{adams1995hitchhiker}
+
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}
+\b
+    </div>
+
+    <div class="col">
+      <iframe id="frame" src='{% static "nikhil.pdf" %}' width="100%" height="100%"></iframe>
+    </div>
+
+  </div>
+
+</div>
+
+<script type="text/javascript">
+  ace.require("ace/ext/language_tools");
+	  var editor = ace.edit("editor");
+      editor.setShowPrintMargin(false);
+      editor.getSession().setMode("ace/mode/tex");
+      // editor.setOptions({
+      //   enableBasicAutocompletion: true,
+      //   enableSnippets: true,
+      //   enableLiveAutocompletion: true
+      // });
+
+
+
+
+
+
+function saveContent(){
+    var code =editor.getSession().getValue();
+    var file_name = prompt("Please enter the file name:");
+    var pk = 1;
+    var URL = "{% url 'save' %}";
+    var data = {'code': code,
+                'name': file_name};
+    $.post(URL, data, function(response){
+        if(response === 'success'){ window.location.reload(); }
+        else{ alert('Error! :('); }
+    });
+  }
+    $(document).ready(function(){
+    $('#save_btn').click(function(editor){
+        // editor.preventDefault();
+        // var pk = "{{instance.pk}}"
+        saveContent();
+    });
+});
+
+
+function newFileName(){
+  var file_name = prompt("Please enter the file name:");
+  var URL = "{% url 'new_file' %}";
+  var data = {'name': file_name};
+
+  $.post(URL, data, function(response){
+    if(response === 'success'){ window.location.reload(); }
+    else{ alert('Error! :('); }
+  });
+}
+    $(document).ready(function(){
+    $('#newfile_btn').click(function(){
+        newFileName();
+    });
+});
+
+
+
+function compile(){
+    var URL = "{% url 'compile' %}";
+    $.post(URL, function(response){
+        if(response === 'success'){
+          document.getElementById('frame').contentDocument.location.reload(true); }
+        else{ alert('Error! :('); }
+    });
+  }
+    $(document).ready(function(){
+    $('#compile_btn').click(function(editor){
+        editor.preventDefault();
+        compile();
+    });
+});
+
+// function deleteFile(){
+//   var URL = "{% url 'delete_file' %}";
+//   var pk = 1;
+//   var data = {'id': pk};
+//
+//   $.post(URL, data, function(response){
+//     if(response === 'success'){  }
+//     else{ alert('Error! :('); }
+//   });
+// }
+
+
+</script>
+{% endblock %}
